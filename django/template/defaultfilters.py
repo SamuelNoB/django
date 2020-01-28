@@ -72,6 +72,12 @@ def addslashes(value):
 @stringfilter
 def capfirst(value):
     """Capitalize the first character of the value."""
+    for i, letter in enumerate(value):
+        if letter is not ' ' and i > 0:
+            return value and value[:i-1] + value[i].upper() + value[i+1:]
+        elif letter is not ' ' and i == 0:
+            break
+                    
     return value and value[0].upper() + value[1:]
 
 
@@ -152,13 +158,12 @@ def floatformat(text, arg=-1):
 
     # Avoid conversion to scientific notation by accessing `sign`, `digits`,
     # and `exponent` from Decimal.as_tuple() directly.
-    rounded_d = d.quantize(exp, ROUND_HALF_UP, Context(prec=prec))
-    sign, digits, exponent = rounded_d.as_tuple()
+    sign, digits, exponent = d.quantize(exp, ROUND_HALF_UP, Context(prec=prec)).as_tuple()
     digits = [str(digit) for digit in reversed(digits)]
     while len(digits) <= abs(exponent):
         digits.append('0')
     digits.insert(-exponent, '.')
-    if sign and rounded_d:
+    if sign:
         digits.append('-')
     number = ''.join(reversed(digits))
     return mark_safe(formats.number_format(number, abs(p)))
@@ -787,6 +792,8 @@ def yesno(value, arg=None):
     """
     if arg is None:
         arg = gettext('yes,no,maybe')
+        arg = arg.replace(" ", "")
+
     bits = arg.split(',')
     if len(bits) < 2:
         return value  # Invalid arg.
